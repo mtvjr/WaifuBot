@@ -51,7 +51,7 @@ def displayHelp(channel):
 Commands:
 \t!help - Displays this help page
 \t!stream - Displays a list of streamers
-\t!stream <streamer> - Displays a link to the streamer's page""".format(config["LoginInfo"]["Server Name"])
+\t!stream <streamer> - Displays a link to the streamer's page""".format(config["Login Data"]["Server Name"])
     for com in commands:
         helpMessage += "\n\t!{0} - {1}".format(com, commands[com]["Description"])
     yield from client.send_message(channel, helpMessage)
