@@ -54,7 +54,7 @@ Commands:
 \t!help - Displays this help page
 \t!stream - Displays a list of streamers
 \t!stream <streamer> - Displays a link to the streamer's page
-\t!thanks - Thanks a random online member for a stream.""".format(config["Login Data"]["Server Name"])
+\t!thanks - Thanks a random online member for a stream""".format(config["Login Data"]["Server Name"])
     for com in commands:
         helpMessage += "\n\t!{0} - {1}".format(com, commands[com]["Description"])
     yield from client.send_message(channel, helpMessage)
@@ -71,26 +71,6 @@ def runCommand(command, channel):
     yield from client.send_message(channel, message)
     return
 
-@asyncio.coroutine
-def displayHelp(channel):
-    commands = config["Commands"]
-    helpMessage = """WaifuBot, a chatbot for {0} - usage \"!<command>\"
-
-Commands:
-\t!help - Displays this help page
-\t!stream - Displays a list of streamers
-\t!stream <streamer> - Displays a link to the streamer's page""".format(config["Login Data"]["Server Name"])
-    for com in commands:
-        helpMessage += "\n\t!{0} - {1}".format(com, commands[com]["Description"])
-    yield from client.send_message(channel, helpMessage)
-        
-
-@asyncio.coroutine
-def runCommand(command, channel):
-    message = random.sample(command["Options"], 1)[0]
-    yield from client.send_message(channel, message)
-    
-    
 @asyncio.coroutine
 def streamCommand(message): 
     streamTemplate = "{0} streams at {1}"
