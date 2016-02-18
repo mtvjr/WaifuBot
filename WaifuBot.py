@@ -39,8 +39,36 @@ def on_message(message):
             yield from streamCommand(message)
         elif (command.startswith('!help') or command.startswith('!commands')):
             yield from displayHelp(message.channel)
+        elif (command.startswith('!thanks')):
+            yield from thanksCommand(message)
         elif (command[1:] in commands): # if config file has command
             yield from runCommand(commands[command[1:]], message.channel)
+    return
+
+@asyncio.coroutine
+def displayHelp(channel):
+    commands = config["Commands"]
+    helpMessage = """WaifuBot, a chatbot for {0} - usage \"!<command>\"
+
+Commands:
+\t!help - Displays this help page
+\t!stream - Displays a list of streamers
+\t!stream <streamer> - Displays a link to the streamer's page
+\t!thanks - Thanks a random online member for a stream.""".format(config["Login Data"]["Server Name"])
+    for com in commands:
+        helpMessage += "\n\t!{0} - {1}".format(com, commands[com]["Description"])
+    yield from client.send_message(channel, helpMessage)
+
+@asyncio.coroutine
+def thanksCommand(message):
+    text = "Thanks {0} for the stream!"
+    user = random.sample(set(message.server.members), 1)[0]
+    yield from client.send_message(message.channel, text.format(user.name))
+
+@asyncio.coroutine
+def runCommand(command, channel):
+    message = random.sample(command["Options"], 1)[0]
+    yield from client.send_message(channel, message)
     return
 
 @asyncio.coroutine
