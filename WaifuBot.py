@@ -96,7 +96,7 @@ def addStreamer(message):
                     return
             config["Streamers"][streamerName] = streamerLink
             rewriteConfig()
-            yield from client.send_message(message.channel, streamerName + " removed from stream list")
+            yield from client.send_message(message.channel, streamerName + " added to stream list")
         else:
             yield from client.send_message(message.channel, helpText + "\n\t**Error: You are not allowed to add streamers**")
     elif (len(msgList) == 1):
@@ -117,7 +117,7 @@ def delStreamer(message):
                 if streamerName.lower() == streamer.lower():
                     del(config["Streamers"][streamer])
                     rewriteConfig()
-                    yield from client.send_message(message.channel, streamer + " added to stream list")
+                    yield from client.send_message(message.channel, streamer + " removed from stream list")
                     return
             yield from client.send_message(message.channel, helpText + "\n\t**Error: Streamer doesn't exist**")
         else:
