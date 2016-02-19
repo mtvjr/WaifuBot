@@ -70,7 +70,7 @@ Commands:
 
 @asyncio.coroutine
 def thanksCommand(message):
-    text = "Thanks {0} for the stream!"
+    text = "Thanks for the stream {0}!"
     user = random.sample(set(message.server.members), 1)[0]
     yield from client.send_message(message.channel, text.format(user.name))
 
