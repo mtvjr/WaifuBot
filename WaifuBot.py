@@ -16,8 +16,11 @@ def on_ready():
     print("Logged in as")
     print(client.user.name)
     print(client.user.id)
-    print('------')
-    serverID = config["Login Data"]["Server ID"]
+    serverID = config["Server Data"]["Server ID"]
+    print("Allowing add commands from users in these roles:")
+    for role in config["Server Data"]["Mod Roles"]:
+        print("  "+role)
+    print('-------------')
     return
     
 @client.event
@@ -26,16 +29,20 @@ def on_message(message):
     if message.author == client.user:
         return
 
-    if (message.server.id != config["Login Data"]["Server ID"]):
+    if (message.server.id != config["Server Data"]["Server ID"]):
         print("Found message on " + message.server.id)
         return
     
 
-    print(config["Login Data"]["Server Name"] + " Message Found")
+    print(config["Server Data"]["Server Name"] + " Message Found")
     command = message.content.split(' ')[0]
     if (command.startswith('!')):
         commands = config["Commands"]
-        if (command.startswith('!stream')):
+        if (command.startswith('!streamadd')):
+            yield from addStreamer(message)
+        elif (command.startswith('!streamdel')):
+            yield from delStreamer(message)
+        elif (command.startswith('!stream')):
             yield from streamCommand(message)
         elif (command.startswith('!help') or command.startswith('!commands')):
             yield from displayHelp(message.channel)
@@ -53,8 +60,10 @@ def displayHelp(channel):
 Commands:
 \t!help - Displays this help page
 \t!stream - Displays a list of streamers
-\t!stream <streamer> - Displays a link to the streamer's page
-\t!thanks - Thanks a random online member for a stream""".format(config["Login Data"]["Server Name"])
+\t!stream streamerName - Displays a link to the streamer's page
+\t!streamadd streamerName streamerLink - Adds a streamer to the streamers list (Mod Only)
+\t!streamdel streamerName - Removes a streamer from the streamers list (Mod Only)
+\t!thanks - Thanks a random online member for a stream""".format(config["Server Data"]["Server Name"])
     for com in commands:
         helpMessage += "\n\t!{0} - {1}".format(com, commands[com]["Description"])
     yield from client.send_message(channel, helpMessage)
@@ -72,6 +81,70 @@ def runCommand(command, channel):
     return
 
 @asyncio.coroutine
+def addStreamer(message):
+    helpText = """\
+!streamadd - Mod only, adds a streamer to the streamers list
+\t- Usage \"!streamadd streamerName streamerLink\""""
+    msgList = message.content.split(' ')
+    if (len(msgList) == 3):
+        if (isMod(message.author)): 
+            streamerName = msgList[1]
+            streamerLink = msgList[2]
+            for streamer in config["Streamers"]: # Check if the streamer has already been added
+                if streamerName.lower() == streamer.lower():
+                    yield from client.send_message(message.channel, helpText + "\n\t**Error: Streamer already added**")
+                    return
+            config["Streamers"][streamerName] = streamerLink
+            rewriteConfig()
+            yield from client.send_message(message.channel, streamerName + " removed from stream list")
+        else:
+            yield from client.send_message(message.channel, helpText + "\n\t**Error: You are not allowed to add streamers**")
+    elif (len(msgList) == 1):
+        yield from client.send_message(message.channel, helpText)
+    else:
+        yield from client.send_message(message.channel, helpText + "\n\t**Error: Not enough arguments**")
+        
+@asyncio.coroutine
+def delStreamer(message):
+    helpText = """\
+!streamdel - Mod only, removes a streamer from the streamers list
+\t- Usage \"!streamdel streamerName\""""
+    msgList = message.content.split(' ')
+    if (len(msgList) == 2):
+        if (isMod(message.author)): 
+            streamerName = msgList[1]
+            for streamer in config["Streamers"]: # Check if the streamer is in the list
+                if streamerName.lower() == streamer.lower():
+                    del(config["Streamers"][streamer])
+                    rewriteConfig()
+                    yield from client.send_message(message.channel, streamer + " added to stream list")
+                    return
+            yield from client.send_message(message.channel, helpText + "\n\t**Error: Streamer doesn't exist**")
+        else:
+            yield from client.send_message(message.channel, helpText + "\n\t**Error: You are not allowed to remove streamers**")
+    elif (len(msgList) == 1):
+        yield from client.send_message(message.channel, helpText)
+    else:
+        yield from client.send_message(message.channel, helpText + "\n\t**Error: Not enough arguments**")
+
+@asyncio.coroutine
+def isMod(user):
+    superUsers = config["Server Data"]["Mod Roles"]
+    uroles = []
+    
+    for role in user.roles:
+        uroles.append(role.name.lower())
+    
+    for role in superUsers:
+        lrole = role.lower()
+        if lrole == "everyone":
+            return true
+        if role in uroles:
+            return true
+        
+    return false
+    
+@asyncio.coroutine
 def streamCommand(message): 
     streamTemplate = "{0} streams at {1}"
     streamers = config["Streamers"]
@@ -80,6 +153,7 @@ def streamCommand(message):
 
 The added streamers are:"""   
 
+    streamerList = []
     for streamer in streamers:
         streamHelp += "\n\t{0}".format(streamer)
     
@@ -88,31 +162,34 @@ The added streamers are:"""
         yield from client.send_message(message.channel, streamHelp)
         return
     
-    streamer = lis[1]
+    streamer = lis[1].lower()
     
-    if streamer in streamers:
-        reply = "{0} streams at {1}".format(streamer, streamers[streamer])
-        yield from client.send_message(message.channel, reply)
-    else:
-        print("Streamer not found: " + streamer)
-        yield from client.send_message(message.channel, streamHelp)
+    for streamerKey in streamers:
+        if streamer.startswith(streamerKey.lower()):
+            reply = "{0} streams at {1}".format(streamerKey, streamers[streamerKey])
+            yield from client.send_message(message.channel, reply)
+            return
+            
+    print("Streamer not found: " + streamer)
+    yield from client.send_message(message.channel, streamHelp + "\n\n\t**Error: Streamer not found**")
         
-
-def loadConfig(fileName):
-    return yaml.load(open(fileName))
-
 def genConfig():
-    f = open("config.yml", "w")
-    loginData = {"Email": "email@email.ext", "Password": "pAssw0rd", "Server ID": "135531470562394112", "Server Name": "Discord Server"}
+    modRoles = ["Admin", "Mod", "Moderator"]
+    loginData = {"Email": "email@email.ext", "Password": "pAssw0rd", "Server ID": "135531470562394112"}
+    serverData = {"Server Name": "Discord Server", "Mod Roles": modRoles}
     streamers = {"Joe": "Joe's Website", "Megan": "Megan's Website"}
     optionsHi = ["Hello There!", "Howdy"]
     command = {"Keyword": "hi", "Options": optionsHi, "Description": "Says hello"}
     optionsBye = ["Goodbye!"]
     command2 = {"Keyword": "bye", "Options": optionsBye, "Description": "Says Goodbye"}
     commands = {"hi": command, "bye": command2}
-    conf = {"Login Data": loginData, "Streamers": streamers, "Commands": commands}
-    yaml.dump(conf, f, default_flow_style=False)
+    config = {"Login Data": loginData, "Server Data": serverData, "Streamers": streamers, "Commands": commands}
+    rewriteConfig()
     return
+
+def rewriteConfig():
+    f = open("config.yml", "w")
+    yaml.dump(config, f, default_flow_style=False)
 
 if __name__ == "__main__":
     if (len(sys.argv) > 1):
