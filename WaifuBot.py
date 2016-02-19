@@ -127,7 +127,6 @@ def delStreamer(message):
     else:
         yield from client.send_message(message.channel, helpText + "\n\t**Error: Not enough arguments**")
 
-@asyncio.coroutine
 def isMod(user):
     superUsers = config["Server Data"]["Mod Roles"]
     uroles = []
@@ -138,11 +137,15 @@ def isMod(user):
     for role in superUsers:
         lrole = role.lower()
         if lrole == "everyone":
-            return true
-        if role in uroles:
-            return true
-        
-    return false
+            print("Granting access as everyone")
+            return True
+        if lrole in uroles:
+            print("Granting access to role: " + role)
+            return True
+    print("Returning false, bad roles: ")  
+    for role in uroles:
+        print("  " + role)
+    return False
     
 @asyncio.coroutine
 def streamCommand(message): 
