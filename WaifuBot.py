@@ -6,6 +6,9 @@ import asyncio
 import sys
 import random
 
+import ctypes
+ctypes.windll.kernel32.SetConsoleTitleA(b"WaifuBot")
+
 config = dict()
 
 client = discord.Client()
