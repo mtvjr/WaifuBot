@@ -5,9 +5,11 @@ import yaml
 import asyncio
 import sys
 import random
+import os
 
-import ctypes
-ctypes.windll.kernel32.SetConsoleTitleA(b"WaifuBot")
+if (os.name == "nt"):
+    import ctypes
+    ctypes.windll.kernel32.SetConsoleTitleA(b"WaifuBot")
 
 config = dict()
 
