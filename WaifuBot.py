@@ -7,9 +7,6 @@ import sys
 import random
 import os
 
-if (os.name == "nt"):
-    import ctypes
-    ctypes.windll.kernel32.SetConsoleTitleA(b"WaifuBot")
 
 config = dict()
 
@@ -199,6 +196,13 @@ def rewriteConfig():
     f = open("config.yml", "w")
     yaml.dump(config, f, default_flow_style=False)
 
+def setName(newName):
+    if (os.name == "nt"):
+        import ctypes
+        ctypes.windll.kernel32.SetConsoleTitleA(str.encode(newName))
+    else:
+        sys.stdout.write("\x1b]2;{0}\x07".format(newName))
+
 if __name__ == "__main__":
     if (len(sys.argv) > 1):
         #Check arguments
@@ -206,6 +210,7 @@ if __name__ == "__main__":
             genConfig()
             exit()
     
+    setName("Waifu Bot")
     config = yaml.safe_load(open("config.yml"))
     loginData = config["Login Data"]
     client.run(loginData["Email"], loginData["Password"])
