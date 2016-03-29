@@ -188,6 +188,7 @@ def genConfig():
     optionsBye = ["Goodbye!"]
     command2 = {"Keyword": "bye", "Options": optionsBye, "Description": "Says Goodbye"}
     commands = {"hi": command, "bye": command2}
+    global config
     config = {"Login Data": loginData, "Server Data": serverData, "Streamers": streamers, "Commands": commands}
     rewriteConfig()
     return
