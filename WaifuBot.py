@@ -5,6 +5,7 @@ import yaml
 import asyncio
 import sys
 import random
+import copy
 import os
 
 
@@ -58,6 +59,8 @@ def on_message(message):
             yield from restoreCommand(message)
         elif (command.startswith('!commanddesc')):
             yield from descCommand(message)
+        elif (command.startswith('!source')):
+            yield from sourceCommand(message)
         elif (command[1:] in commands): # if config file has command
             yield from runCommand(commands[command[1:]], message.channel)
     return
@@ -66,14 +69,15 @@ def on_message(message):
 def displayHelp(message):
     channel = message.channel
     commands = config["Commands"]
-    helpMessage = """WaifuBot, a chatbot for {0} - usage \"!<command>\"
+    helpMessage = """{0}, a chatbot for {1} - usage \"!<command>\"
 
 Commands:
 \t!help - Displays this help page
 \t!help all - Sends you a message with all commands
 \t!stream - Displays a list of streamers
-\t!thanks - Thanks a random online member for a stream\
-""".format(config["Server Data"]["Server Name"])
+\t!thanks - Thanks a random online member for a stream
+\t!source - Gives a link to the source code of {0}\
+""".format(client.user.name, config["Server Data"]["Server Name"])
     if message.content.startswith('!help all'):
         helpMessage +="""\
 \t!streamadd - Adds a streamer to the streamers list (Mod Only)
@@ -100,12 +104,12 @@ Commands:
 @asyncio.coroutine
 def thanksCommand(message):
     text = "Thanks for the stream {0}!"
-    userset = set(message.server.members)
-    user = random.choice(userset)
-    userset.remove(user)
+    userlist = list(message.server.members)
+    user = random.choice(userlist)
+    userlist.remove(user)
     while(user.status != discord.Status.online):
-        user = random.choice(userset)
-        userset.remove(user)
+        user = random.choice(userlist)
+        userlist.remove(user)
     yield from client.send_message(message.channel, text.format(user.name))
 
 @asyncio.coroutine
@@ -386,6 +390,12 @@ The added streamers are:"""
     yield from client.send_message(message.channel,\
         streamHelp + "\n\n\t**Error: Streamer not found**")
         
+@asyncio.coroutine
+def sourceCommand(message):
+    reply = "{0}'s source code is available at http://github.com/mtvjr/WaifuBot"\
+        .format(client.user.name)
+    yield from client.send_message(message.channel, reply)
+
 def genConfig():
     modRoles = ["Admin", "Mod", "Moderator"]
     loginData = {"Email": "email@email.ext", "Password": "pAssw0rd"}
