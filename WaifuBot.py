@@ -33,11 +33,13 @@ def on_message(message):
         return
 
     if (message.server.id != config["Server Data"]["Server ID"]):
-        print("Found message on " + message.server.id)
+        print("Found message on {0} by {1} (ID: {2}).".format(\
+            message.server.id, message.author.name, message.author.id))
         return
     
 
-    print(config["Server Data"]["Server Name"] + " Message Found")
+    print("Found message on {0} by {1} (ID: {2}).".format(\
+        config["Server Data"]["Server Name"], message.author.name, message.author.id))
     command = message.content.split(' ')[0]
     if (command.startswith('!')):
         commands = config["Commands"]
@@ -61,6 +63,8 @@ def on_message(message):
             yield from descCommand(message)
         elif (command.startswith('!source')):
             yield from sourceCommand(message)
+        elif (command.startswith('!mentionable')):
+            yield from mentionableCommand(message)
         elif (command[1:] in commands): # if config file has command
             yield from runCommand(commands[command[1:]], message.channel)
     return
@@ -80,6 +84,7 @@ Commands:
 """.format(client.user.name, config["Server Data"]["Server Name"])
     if message.content.startswith('!help all'):
         helpMessage +="""\
+\t!setmentionalbe - Allows {0} to ping you
 \t!streamadd - Adds a streamer to the streamers list (Mod Only)
 \t!streamdel - Removes a streamer from the streamers list (Mod Only)
 \t!commandadd - Adds a command (Mod Only)
@@ -110,7 +115,46 @@ def thanksCommand(message):
     while(user.status != discord.Status.online):
         user = random.choice(userlist)
         userlist.remove(user)
-    yield from client.send_message(message.channel, text.format(user.name))
+    if user.id in safeConfigLookup(config, "Mentionable Users", []):
+        yield from client.send_message(message.channel, text.format(user.mention))
+    else:
+        yield from client.send_message(message.channel, text.format(user.name))
+
+@asyncio.coroutine
+def mentionableCommand(message):
+    helpText = """\
+!mentionable - Allows {0} to ping you
+\t- Usage \"!mentionable [ True | False ]\"""".format(client.user.name)
+    msgList = message.content.split(' ')
+    userID = message.author.id
+    IDList = safeConfigLookup(config, "Mentionable Users", [])
+    if (len(msgList) == 2):
+        if msgList[1].lower() == "true":
+            if userID in IDList:
+                yield from client.send_message(message.channel,\
+                    helpText + "\n\t**Error: You are already mentionable**")
+            else:
+                IDList.append(userID)
+                rewriteConfig()
+                yield from client.send_message(message.channel,\
+                    message.author.name + " has been added to the mentionable list.")
+        elif (msgList[1].lower() == "false"):
+            if userID in IDList:
+                IDList.remove(userID)
+                rewriteConfig()
+                yield from client.send_message(message.channel,\
+                    message.author.name + " has been removed from the mentionable list.")
+            else:
+                yield from client.send_message(message.channel,\
+                    helpText + "\n\t**Error: You are already not mentionable**")
+        else:
+            yield from client.send_message(message.channel,\
+                helpText + "\n\t**Error: Value must be true or false**")
+    elif (len(msgList) == 1):
+        yield from client.send_message(message.channel, helpText)
+    else:
+        yield from client.send_message(message.channel,\
+            helpText + "\n\t**Error: Wrong number of arguments.**")
 
 @asyncio.coroutine
 def runCommand(command, channel):
@@ -301,7 +345,7 @@ def importantCommand(message):
                         helpText + "\n\t**Error: {0} not found.**".format(commandName))
             else:
                 yield from client.send_message(message.channel,\
-                    helpText + "\n\t**Error: Value must be either true or false")
+                    helpText + "\n\t**Error: Value must be true or false")
         else:
             yield from client.send_message(message.channel,\
                 helpText + "\n\t**Error: You are not allowed to change commands.**")
@@ -410,9 +454,11 @@ def genConfig():
     command3 = {"Options": optionsKnock, "Description": "Says Who's There?", "Important": False}
     commands = {"hi": command, "bye": command2}
     deletedCommands = {"Knock": command3}
+    mentionalbeUsers = [95704207738277888]
     global config
     config = {"Login Data": loginData, "Server Data": serverData, "Streamers": streamers,\
-        "Commands": commands, "Deleted Commands": deletedCommands}
+        "Commands": commands, "Deleted Commands": deletedCommands,\
+        "Mentionable Users": mentionableUsers}
     rewriteConfig()
     return
 
