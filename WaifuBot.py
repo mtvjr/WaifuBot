@@ -454,7 +454,7 @@ def genConfig():
     command3 = {"Options": optionsKnock, "Description": "Says Who's There?", "Important": False}
     commands = {"hi": command, "bye": command2}
     deletedCommands = {"Knock": command3}
-    mentionalbeUsers = [95704207738277888]
+    mentionableUsers = [95704207738277888]
     global config
     config = {"Login Data": loginData, "Server Data": serverData, "Streamers": streamers,\
         "Commands": commands, "Deleted Commands": deletedCommands,\
