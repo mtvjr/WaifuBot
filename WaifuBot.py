@@ -33,13 +33,13 @@ def on_message(message):
         return
 
     if (message.server.id != config["Server Data"]["Server ID"]):
-        print("Found message on {0} by {1} (ID: {2}).".format(\
-            message.server.id, message.author.name, message.author.id))
+        print("Found message on {0} {1}.".format(\
+            message.server.id, message.author.id))
         return
     
 
-    print("Found message on {0} by {1} (ID: {2}).".format(\
-        config["Server Data"]["Server Name"], message.author.name, message.author.id))
+    print("Found message on {0} by 2).".format(\
+        config["Server Data"]["Server Name"], message.author.id))
     command = message.content.split(' ')[0]
     if (command.startswith('!')):
         commands = config["Commands"]
@@ -59,6 +59,8 @@ def on_message(message):
             yield from delCommand(message)
         elif (command.startswith('!commandrestore')):
             yield from restoreCommand(message)
+        elif (command.startswith('!commandimportant')):
+            yield from importantCommand(message)
         elif (command.startswith('!commanddesc')):
             yield from descCommand(message)
         elif (command.startswith('!source')):
