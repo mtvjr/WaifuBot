@@ -139,13 +139,13 @@ def mentionableCommand(message):
                 IDList.append(userID)
                 rewriteConfig()
                 yield from client.send_message(message.channel,\
-                    message.author.name + " has been added to the mentionable list.")
+                    message.author.id + " has been added to the mentionable list.")
         elif (msgList[1].lower() == "false"):
             if userID in IDList:
                 IDList.remove(userID)
                 rewriteConfig()
                 yield from client.send_message(message.channel,\
-                    message.author.name + " has been removed from the mentionable list.")
+                    message.author.id + " has been removed from the mentionable list.")
             else:
                 yield from client.send_message(message.channel,\
                     helpText + "\n\t**Error: You are already not mentionable**")
@@ -399,9 +399,9 @@ def isMod(user):
             print("Granting access to {0} as everyone")
             return True
         if lrole in uroles:
-            print("Granting access to {0} as role: {1}".format(user.name, lrole))
+            print("Granting access to {0} as role: {1}".format(user.id, lrole))
             return True
-    print("Returning false, {0} denied access. Bad roles: ").format(user.name) 
+    print("Returning false, {0} denied access. Bad roles: ").format(user.id) 
     for role in uroles:
         print("  " + role)
     return False
