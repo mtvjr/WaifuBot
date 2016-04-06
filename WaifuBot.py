@@ -308,10 +308,12 @@ def command_delete(message):
     if len(msg_list) == 2:
         if is_mod(message.author):
             command_name = msg_list[1]
+            deleted_commands = safe_config_lookup(
+                config, "Deleted Commands", dict())
             # Check if the command is in the list
             if command_name in config["Commands"]:
                 # Back up command before deleting
-                if command_name in config["Deleted Commands"]:
+                if command_name in deleted_commands:
                     del(config["Commands"][command_name])
                     rewrite_config()
                     yield from client.send_message(
@@ -321,9 +323,9 @@ def command_delete(message):
                         .format(command_name))
                 else:
                     # No backup already exists
-                    config["Deleted Commands"][command_name] =\
+                    deleted_commands[command_name] =\
                         config["Commands"].pop(command_name)
-                    config["Deleted Commands"][command_name][
+                    deleted_commands[command_name][
                         "Deleted By"] = message.author.name
                     rewrite_config()
                     yield from client.send_message(
