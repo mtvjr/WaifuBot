@@ -537,8 +537,8 @@ The added streamers are:"""
 @asyncio.coroutine
 def command_source(message):
     reply = "{0}'s source code is available at " +\
-            "http://github.com/mtvjr/WaifuBot"\
-            .format(client.user.name)
+            "http://github.com/mtvjr/WaifuBot"
+    reply = reply.format(client.user.name)
     yield from client.send_message(message.channel, reply)
 
 
