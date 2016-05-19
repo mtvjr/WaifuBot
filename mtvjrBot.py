@@ -1,4 +1,4 @@
-# WaifuBot - A Discord bot capable of managing streamers and
+# mtvjrBot - A Discord bot capable of managing streamers and
 # a command list
 
 import discord
@@ -537,7 +537,7 @@ The added streamers are:"""
 @asyncio.coroutine
 def command_source(message):
     reply = "{0}'s source code is available at " +\
-            "http://github.com/mtvjr/WaifuBot"
+            "http://github.com/mtvjr/mtvjrbot"
     reply = reply.format(client.user.name)
     yield from client.send_message(message.channel, reply)
 
@@ -597,7 +597,7 @@ if __name__ == "__main__":
             gen_config()
             exit()
     
-    set_name("Waifu Bot")
+    set_name("MTVJR Bot")
     config = yaml.safe_load(open("config.yml"))
     loginData = config["Login Data"]
     client.run(loginData["Email"], loginData["Password"])
