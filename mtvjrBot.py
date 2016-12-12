@@ -591,6 +591,7 @@ def safe_config_lookup(config_dict, key, default):
     return config_dict[key]
 
 if __name__ == "__main__":
+    random.seed(os.urandom(9))
     if len(sys.argv) > 1:
         # Check arguments
         if sys.argv[1] == "--generate-config":
